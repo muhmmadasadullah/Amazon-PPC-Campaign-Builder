@@ -1,0 +1,2072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon PPC Campaign Builder V2.0</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        /* V2.0 Enhanced Styles */
+        .campaign-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+        
+        .campaign-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .campaign-card.selected {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+        
+        .isolation-section {
+            display: none;
+            animation: slideInUp 0.4s ease-out;
+        }
+        
+        .isolation-section.show {
+            display: block;
+        }
+        
+        @keyframes slideInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        @keyframes fadeInScale {
+            from { 
+                opacity: 0; 
+                transform: scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+        }
+        
+        .btn-add {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-add::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-add:hover::before {
+            left: 100%;
+        }
+        
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        /* Enhanced V2.0 Campaign Type Colors with Gradients */
+        .btn-sp-ex { 
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        .btn-sp-ex:hover { 
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-sp-ph { 
+            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+        }
+        .btn-sp-ph:hover { 
+            background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%);
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+        }
+        
+        .btn-sp-br { 
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3);
+        }
+        .btn-sp-br:hover { 
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            box-shadow: 0 8px 25px rgba(22, 163, 74, 0.4);
+        }
+        
+        .btn-sp-bmm { 
+            background: linear-gradient(135deg, #14b8a6 0%, #0f766e 100%);
+            box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3);
+        }
+        .btn-sp-bmm:hover { 
+            background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+            box-shadow: 0 8px 25px rgba(20, 184, 166, 0.4);
+        }
+        
+        .btn-sp-pat { 
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        }
+        .btn-sp-pat:hover { 
+            background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+        }
+        
+        .btn-skc-ex { 
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        }
+        .btn-skc-ex:hover { 
+            background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+        }
+        
+        .btn-auto-ca { 
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        .btn-auto-ca:hover { 
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-auto-cm { 
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+        .btn-auto-cm:hover { 
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+        }
+        
+        .btn-auto-sb { 
+            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+            box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3);
+        }
+        .btn-auto-sb:hover { 
+            background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+            box-shadow: 0 8px 25px rgba(244, 63, 94, 0.4);
+        }
+        
+        .btn-auto-lm { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .btn-auto-lm:hover { 
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-auto-cp { 
+            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+            box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3);
+        }
+        .btn-auto-cp:hover { 
+            background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+            box-shadow: 0 8px 25px rgba(244, 63, 94, 0.4);
+        }
+
+        /* Enhanced V2.0 Live Preview Design */
+        .live-preview-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            padding: 24px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .live-preview-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="25" cy="75" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="75" cy="25" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        
+        .live-preview-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .preview-campaign-name {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.4;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            word-break: break-all;
+        }
+        
+        .preview-empty-state {
+            text-align: center;
+            opacity: 0.8;
+            font-style: italic;
+        }
+        
+        .preview-label {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+        }
+        
+        .preview-label i {
+            margin-right: 8px;
+        }
+
+        .campaign-summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px;
+        }
+
+        .campaign-instance-badge {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .campaign-count-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border: 2px solid white;
+        }
+
+        .campaign-instance-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-top: 6px;
+            border: 1px solid #93c5fd;
+        }
+
+        .campaign-instance-item .version-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e40af;
+        }
+
+        .campaign-instance-item .remove-btn {
+            color: #dc2626;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .campaign-instance-item .remove-btn:hover {
+            background: #fecaca;
+            color: #991b1b;
+        }
+
+        /* V2.0 Enhanced Form Styling */
+        .form-input {
+            transition: all 0.3s ease;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+        }
+        
+        .form-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* V2.0 Section Cards */
+        .section-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .section-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        /* V2.0 Header Gradient */
+        .header-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #6B73FF 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Tutorial enhancements for V2.0 */
+        .tutorial-highlight {
+            box-shadow: 0 0 0 4px #fbbf24, 0 0 30px rgba(251, 191, 36, 0.4);
+            border-radius: 12px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .tutorial-panel {
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100vh;
+            width: 350px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .tutorial-panel.active {
+            transform: translateX(0);
+        }
+
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 350px;
+            bottom: 0;
+            background: rgba(0,0,0,0.1);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .tutorial-overlay.active {
+            opacity: 1;
+        }
+
+        /* Overview cards styling */
+        .overview-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .overview-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .overview-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .overview-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
+    <!-- Tutorial Overlay & Panel -->
+    <div id="tutorialOverlay" class="tutorial-overlay"></div>
+    <div id="tutorialPanel" class="tutorial-panel">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Tutorial</h3>
+                <button onclick="closeTutorial()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="tutorialContent" class="space-y-4">
+                <!-- Tutorial content will be dynamically inserted here -->
+            </div>
+            
+            <div class="mt-6 flex justify-between">
+                <button id="prevTutorialBtn" onclick="previousTutorialStep()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg" disabled>
+                    <i class="fas fa-arrow-left mr-2"></i>Previous
+                </button>
+                <button id="nextTutorialBtn" onclick="nextTutorialStep()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                    Next<i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+            
+            <div id="tutorialProgress" class="mt-4">
+                <div class="text-sm text-gray-600 text-center">Step <span id="currentTutorialStep">1</span> of <span id="totalTutorialSteps">10</span></div>
+                <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                    <div id="tutorialProgressBar" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 10%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced V2.0 Header -->
+    <div class="header-gradient text-white py-8 relative">
+        <div class="container mx-auto px-4 text-center relative z-10">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <h1 class="text-4xl font-bold flex items-center justify-center mb-2">
+                        <i class="fas fa-chart-line mr-4 text-5xl"></i>
+                        Amazon PPC Campaign Builder
+                    </h1>
+                    <div class="flex items-center justify-center space-x-3 mb-2">
+                        <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-semibold">V2.0</span>
+                        <span class="text-purple-200">Generate Amazon-ready campaigns instantly</span>
+                    </div>
+                </div>
+                <button onclick="startTutorial()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-6 py-3 rounded-xl transition-all duration-200 backdrop-filter backdrop-blur-sm">
+                    <i class="fas fa-graduation-cap mr-2"></i>Tutorial
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Campaign Overview -->
+        <div id="campaignOverview" class="section-card p-8 mb-8 hidden">
+            <h2 class="text-2xl font-semibold mb-6 flex items-center text-gray-800">
+                <i class="fas fa-chart-pie text-blue-600 mr-3 text-3xl"></i>
+                Campaign Overview
+            </h2>
+            
+            <!-- Overview Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="overview-card">
+                    <div id="totalCampaigns" class="overview-number">0</div>
+                    <div class="overview-label">Total Campaigns</div>
+                </div>
+                <div class="overview-card">
+                    <div id="totalKeywords" class="overview-number">0</div>
+                    <div class="overview-label">Keywords</div>
+                </div>
+                <div class="overview-card">
+                    <div id="totalTargets" class="overview-number">0</div>
+                    <div class="overview-label">Product Targets</div>
+                </div>
+                <div class="overview-card">
+                    <div id="totalBudget" class="overview-number">$0</div>
+                    <div class="overview-label">All Campaigns Total Budget</div>
+                </div>
+            </div>
+            
+            <!-- Detailed Breakdown -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="font-semibold text-gray-800 mb-4">Product Information</h3>
+                    <div id="overviewProductInfo" class="space-y-2 text-sm text-gray-600">
+                        <!-- Product info will be inserted here -->
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-800 mb-4">Campaign Breakdown</h3>
+                    <div id="overviewCampaignInfo" class="space-y-2 text-sm text-gray-600">
+                        <!-- Campaign info will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Information -->
+        <div class="section-card p-8 mb-8">
+            <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                <i class="fas fa-box text-blue-600 mr-3 text-3xl"></i>
+                Product Information
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Product Name *</label>
+                    <input type="text" id="productName" placeholder="Enter your product name" 
+                           class="form-input w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <p class="text-xs text-gray-500 mt-2">This will be used in your campaign names</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Product ASIN *</label>
+                    <input type="text" id="productASIN" placeholder="B08XYZ123ABC" 
+                           class="form-input w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <p class="text-xs text-gray-500 mt-2">Will be included at the end of campaign names</p>
+                </div>
+            </div>
+            <div class="mt-8">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Product SKUs *</label>
+                <textarea id="productSKUs" rows="4" placeholder="Enter one SKU per line&#10;SKU-001&#10;SKU-002&#10;SKU-003"
+                         class="form-input w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                <p class="text-xs text-gray-500 mt-2">Enter one SKU per line for multiple products</p>
+            </div>
+        </div>
+
+        <!-- Campaign Theme -->
+        <div class="section-card p-8 mb-8">
+            <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                <i class="fas fa-palette text-purple-600 mr-3 text-3xl"></i>
+                Campaign Theme
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Global Campaign Theme</label>
+                    <select id="campaignTheme" class="form-input w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">No Theme</option>
+                        <option value="BKWS">BKWS - Branded Keywords</option>
+                        <option value="Def PDP">Def PDP - Defensive Product Detail Page</option>
+                        <option value="Rank">Rank - Ranking Keywords</option>
+                        <option value="Scale">Scale - Scaling Campaigns</option>
+                        <option value="Research">Research - Keyword Research</option>
+                        <option value="Offense">Offense - Product Targeting</option>
+                        <option value="Mixed">Mixed - Multiple Campaign Types</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-2">Applies to all campaigns by default</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <input type="checkbox" id="enableCustomTheme" class="mr-2">
+                        Enable Custom Global Theme
+                    </label>
+                    <input type="text" id="customTheme" placeholder="Enter custom theme name" disabled
+                           class="form-input w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100">
+                    <p class="text-xs text-gray-500 mt-2">Override with your own theme name</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced V2.0 Campaign Nomenclature -->
+        <div class="section-card p-8 mb-8">
+            <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                <i class="fas fa-tag text-orange-600 mr-3 text-3xl"></i>
+                Campaign Nomenclature
+            </h2>
+            
+            <!-- Campaign Naming Pattern - Full Width Row -->
+            <div class="mb-8">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Campaign Naming Pattern</label>
+                <input type="text" id="nomenclaturePattern" 
+                       value="{PRODUCT} - {THEME} - {CAMPAIGN} - {ASIN} - {PLACEMENTS}"
+                       placeholder="Customize your campaign naming pattern"
+                       class="form-input w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <p class="text-xs text-gray-500 mt-3">
+                    Use placeholders: {PRODUCT}, {THEME}, {CAMPAIGN}, {ASIN}, {PLACEMENTS}
+                </p>
+            </div>
+            
+            <!-- Live Preview - Separate Full Width Row -->
+            <div>
+                <div class="live-preview-card">
+                    <div class="live-preview-content">
+                        <div class="preview-label">
+                            <i class="fas fa-eye"></i>
+                            Live Preview
+                        </div>
+                        <div id="livePreviewContent" class="preview-campaign-name preview-empty-state">
+                            Enter product details and configure a campaign to see preview
+                        </div>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-3 text-center">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Updates automatically based on your active campaign tab
+                </p>
+            </div>
+        </div>
+
+        <!-- Campaign Types -->
+        <div class="section-card p-8 mb-8">
+            <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                <i class="fas fa-list text-green-600 mr-3 text-3xl"></i>
+                Campaign Types
+            </h2>
+            
+            <!-- Manual Campaigns -->
+            <div class="mb-8">
+                <h3 class="text-xl font-medium text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-hand-paper text-blue-600 mr-2"></i>
+                    Manual Campaigns
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="campaign-card bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border" data-campaign-type="SP-EX">
+                        <div class="campaign-count-badge hidden" id="count-SP-EX">0</div>
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-gray-800 text-lg">SP-EX</h4>
+                            <p class="text-sm text-gray-600">Exact Match</p>
+                        </div>
+                        <button class="btn-add btn-sp-ex w-full text-white py-3 px-4 rounded-xl font-medium" 
+                                onclick="addCampaign('SP-EX')">
+                            <i class="fas fa-plus mr-2"></i> Add Campaign
+                        </button>
+                        <div class="campaign-instances mt-3" id="instances-SP-EX"></div>
+                    </div>
+
+                    <div class="campaign-card bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border" data-campaign-type="SP-PH">
+                        <div class="campaign-count-badge hidden" id="count-SP-PH">0</div>
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-gray-800 text-lg">SP-PH</h4>
+                            <p class="text-sm text-gray-600">Phrase Match</p>
+                        </div>
+                        <button class="btn-add btn-sp-ph w-full text-white py-3 px-4 rounded-xl font-medium" 
+                                onclick="addCampaign('SP-PH')">
+                            <i class="fas fa-plus mr-2"></i> Add Campaign
+                        </button>
+                        <div class="campaign-instances mt-3" id="instances-SP-PH"></div>
+                    </div>
+
+                    <div class="campaign-card bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border" data-campaign-type="SP-BR">
+                        <div class="campaign-count-badge hidden" id="count-SP-BR">0</div>
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-gray-800 text-lg">SP-BR</h4>
+                            <p class="text-sm text-gray-600">Broad Match</p>
+                        </div>
+                        <button class="btn-add btn-sp-br w-full text-white py-3 px-4 rounded-xl font-medium" 
+                                onclick="addCampaign('SP-BR')">
+                            <i class="fas fa-plus mr-2"></i> Add Campaign
+                        </button>
+                        <div class="campaign-instances mt-3" id="instances-SP-BR"></div>
+                    </div>
+
+                    <div class="campaign-card bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border" data-campaign-type="SP-BMM">
+                        <div class="campaign-count-badge hidden" id="count-SP-BMM">0</div>
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-gray-800 text-lg">SP-BMM</h4>
+                            <p class="text-sm text-gray-600">Broad Match Modifier</p>
+                        </div>
+                        <button class="btn-add btn-sp-bmm w-full text-white py-3 px-4 rounded-xl font-medium" 
+                                onclick="addCampaign('SP-BMM')">
+                            <i class="fas fa-plus mr-2"></i> Add Campaign
+                        </button>
+                        <div class="campaign-instances mt-3" id="instances-SP-BMM"></div>
+                    </div>
+
+                    <div class="campaign-card bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border" data-campaign-type="SP-PAT">
+                        <div class="campaign-count-badge hidden" id="count-SP-PAT">0</div>
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-gray-800 text-lg">SP-PAT</h4>
+                            <p class="text-sm text-gray-600">Product Targeting</p>
+                        </div>
+                        <button class="btn-add btn-sp-pat w-full text-white py-3 px-4 rounded-xl font-medium" 
+                                onclick="addCampaign('SP-PAT')">
+                            <i class="fas fa-plus mr-2"></i> Add Campaign
+                        </button>
+                        <div class="campaign-instances mt-3" id="instances-SP-PAT"></div>
+                    </div>
+
+                    <div class="campaign-card bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border" data-campaign-type="SKC-EX">
+                        <div class="campaign-count-badge hidden" id="count-SKC-EX">0</div>
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-gray-800 text-lg">SKC-EX</h4>
+                            <p class="text-sm text-gray-600">Single Keyword Campaign</p>
+                        </div>
+                        <button class="btn-add btn-skc-ex w-full text-white py-3 px-4 rounded-xl font-medium" 
+                                onclick="addCampaign('SKC-EX')">
+                            <i class="fas fa-plus mr-2"></i> Add Campaign
+                        </button>
+                        <div class="campaign-instances mt-3" id="instances-SKC-EX"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Automatic Campaigns -->
+            <div>
+                <h3 class="text-xl font-medium text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-magic text-purple-600 mr-2"></i>
+                    Automatic Campaigns
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="campaign-card bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border" data-campaign-type="AUTO-CA">
+                        <div class="campaign-count-badge hidden" id="count-AUTO-CA">0</div>
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-gray-800 text-lg">AUTO-CA</h4>
+                            <p class="text-sm text-gray-600">Catch-All</p>
+                        </div>
+                        <button class="btn-add btn-auto-ca w-full text-white py-3 px-4 rounded-xl font-medium" 
+                                onclick="addCampaign('AUTO-CA')">
+                            <i class="fas fa-plus mr-2"></i> Add Campaign
+                        </button>
+                        <div class="campaign-instances mt-3" id="instances-AUTO-CA"></div>
+                    </div>
+
+                    <div class="campaign-card bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border" data-campaign-type="AUTO-CM">
+                        <div class="campaign-count-badge hidden" id="count-AUTO-CM">0</div>
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-gray-800 text-lg">AUTO-CM</h4>
+                            <p class="text-sm text-gray-600">Close Match</p>
+                        </div>
+                        <button class="btn-add btn-auto-cm w-full text-white py-3 px-4 rounded-xl font-medium" 
+                                onclick="addCampaign('AUTO-CM')">
+                            <i class="fas fa-plus mr-2"></i> Add Campaign
+                        </button>
+                        <div class="campaign-instances mt-3" id="instances-AUTO-CM"></div>
+                    </div>
+
+                    <div class="campaign-card bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border" data-campaign-type="AUTO-SB">
+                        <div class="campaign-count-badge hidden" id="count-AUTO-SB">0</div>
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-gray-800 text-lg">AUTO-SB</h4>
+                            <p class="text-sm text-gray-600">Substitutes</p>
+                        </div>
+                        <button class="btn-add btn-auto-sb w-full text-white py-3 px-4 rounded-xl font-medium" 
+                                onclick="addCampaign('AUTO-SB')">
+                            <i class="fas fa-plus mr-2"></i> Add Campaign
+                        </button>
+                        <div class="campaign-instances mt-3" id="instances-AUTO-SB"></div>
+                    </div>
+
+                    <div class="campaign-card bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border" data-campaign-type="AUTO-LM">
+                        <div class="campaign-count-badge hidden" id="count-AUTO-LM">0</div>
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-gray-800 text-lg">AUTO-LM</h4>
+                            <p class="text-sm text-gray-600">Loose Match</p>
+                        </div>
+                        <button class="btn-add btn-auto-lm w-full text-white py-3 px-4 rounded-xl font-medium" 
+                                onclick="addCampaign('AUTO-LM')">
+                            <i class="fas fa-plus mr-2"></i> Add Campaign
+                        </button>
+                        <div class="campaign-instances mt-3" id="instances-AUTO-LM"></div>
+                    </div>
+
+                    <div class="campaign-card bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border" data-campaign-type="AUTO-CP">
+                        <div class="campaign-count-badge hidden" id="count-AUTO-CP">0</div>
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-gray-800 text-lg">AUTO-CP</h4>
+                            <p class="text-sm text-gray-600">Complements</p>
+                        </div>
+                        <button class="btn-add btn-auto-cp w-full text-white py-3 px-4 rounded-xl font-medium" 
+                                onclick="addCampaign('AUTO-CP')">
+                            <i class="fas fa-plus mr-2"></i> Add Campaign
+                        </button>
+                        <div class="campaign-instances mt-3" id="instances-AUTO-CP"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selected Campaigns Display -->
+            <div id="selectedCampaigns" class="mt-8 hidden">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Selected Campaigns</h3>
+                <div id="campaignChips" class="flex flex-wrap gap-3"></div>
+            </div>
+        </div>
+
+        <!-- Isolation Logic -->
+        <div id="isolationSection" class="isolation-section section-card p-8 mb-8">
+            <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                <i class="fas fa-shield-alt text-yellow-600 mr-3 text-3xl"></i>
+                Search Term Isolation
+            </h2>
+            <div class="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl p-6">
+                <label class="flex items-start cursor-pointer">
+                    <input type="checkbox" id="enableIsolation" class="mt-1 mr-4 w-5 h-5 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500">
+                    <div>
+                        <span class="font-semibold text-gray-800 text-lg">Enable Search Term Isolation</span>
+                        <p class="text-sm text-gray-600 mt-2 leading-relaxed">
+                            When enabled, keywords from SP-EX and SKC-EX campaigns will automatically be added as negative exact keywords to other match type campaigns (SP-PH, SP-BR, SP-BMM, SP-PAT, Auto campaigns) to prevent keyword overlap and improve campaign performance.
+                        </p>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Campaign Configuration Tabs -->
+        <div id="configurationSection" class="section-card p-8 mb-8 hidden">
+            <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                <i class="fas fa-cog text-gray-600 mr-3 text-3xl"></i>
+                Campaign Configuration
+            </h2>
+            <div id="campaignTabs" class="border-b border-gray-200 mb-8">
+                <nav class="-mb-px flex space-x-8 overflow-x-auto"></nav>
+            </div>
+            <div id="tabContent"></div>
+        </div>
+
+        <!-- Generate Button -->
+        <div class="text-center">
+            <button id="generateBtn" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-5 px-12 rounded-2xl text-xl shadow-2xl transform transition hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" disabled>
+                <i class="fas fa-download mr-3"></i>
+                Generate & Download Campaigns
+            </button>
+            <p class="text-sm text-gray-500 mt-3">Downloads XLSX file ready for Amazon Seller Central</p>
+            
+            <!-- Amazon Upload Link Section -->
+            <div class="mt-6 p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl border border-green-200">
+                <div class="text-center">
+                    <div class="flex items-center justify-center mb-3">
+                        <i class="fas fa-upload text-green-600 text-2xl mr-3"></i>
+                        <h3 class="text-lg font-semibold text-gray-800">Next Step: Upload Your Campaigns</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Upload your campaigns here</p>
+                    <a href="https://advertising.amazon.com/bulksheet/HomePage" 
+                       target="_blank" rel="noopener noreferrer"
+                       style="background: linear-gradient(135deg, #FF9500 0%, #FF6B00 100%) !important; 
+                              color: white !important; 
+                              display: inline-flex; 
+                              align-items: center; 
+                              font-weight: 600; 
+                              padding: 12px 32px; 
+                              border-radius: 12px; 
+                              text-decoration: none; 
+                              box-shadow: 0 4px 15px rgba(255, 149, 0, 0.3); 
+                              transition: all 0.2s ease; 
+                              border: none;"
+                       onmouseover="this.style.background='linear-gradient(135deg, #FF6B00 0%, #E55A00 100%) !important'"
+                       onmouseout="this.style.background='linear-gradient(135deg, #FF9500 0%, #FF6B00 100%) !important'">
+                        <i class="fab fa-amazon" style="margin-right: 12px; font-size: 18px;"></i>
+                        Amazon Seller Central - Bulk Upload
+                        <i class="fas fa-external-link-alt" style="margin-left: 8px; font-size: 14px;"></i>
+                    </a>
+                    <p class="text-xs text-gray-500 mt-3">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Opens Amazon's bulk sheet upload page in a new tab
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced V2.0 Footer -->
+    <div class="bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white py-12 mt-16">
+        <div class="container mx-auto px-4 text-center">
+            <div class="mb-6">
+                <i class="fas fa-code text-blue-400 text-3xl mb-3"></i>
+                <p class="text-xl font-medium">Made with ❤️ by Asadullah</p>
+                <p class="text-gray-400 mt-2">Amazon PPC Campaign Builder V2.0</p>
+            </div>
+            <a href="https://www.linkedin.com/in/muhamadasadullah/" 
+               target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-200 transform hover:scale-105">
+                <i class="fab fa-linkedin mr-3"></i>
+                Connect on LinkedIn
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let campaigns = [];
+        let campaignConfigs = {};
+        let activeTab = null;
+        let currentTutorialStep = 1;
+        let totalTutorialSteps = 10;
+
+        // Tutorial content for V2.0
+        const tutorialSteps = [
+            {
+                title: "Welcome to V2.0",
+                content: `
+                    <h4 class="font-semibold text-gray-800 mb-2">Welcome to Amazon PPC Campaign Builder V2.0</h4>
+                    <p class="text-sm text-gray-600 mb-3">Enhanced with new features and improved user experience:</p>
+                    <ul class="text-sm text-gray-600 space-y-1 mb-3">
+                        <li><strong>Live Preview:</strong> Real-time campaign name preview</li>
+                        <li><strong>Campaign Overview:</strong> Analytics dashboard</li>
+                        <li><strong>Enhanced UI:</strong> Modern, responsive design</li>
+                        <li><strong>Smart Tutorial:</strong> 10-step comprehensive guide</li>
+                    </ul>
+                    <div class="bg-blue-50 p-3 rounded-lg text-sm">
+                        <p><strong>🚀 V2.0 Features:</strong> Everything you need for professional Amazon PPC campaigns!</p>
+                    </div>
+                `,
+                highlight: 'body'
+            },
+            {
+                title: "Product Information",
+                content: `
+                    <h4 class="font-semibold text-gray-800 mb-2">Step 1: Enter Product Details</h4>
+                    <p class="text-sm text-gray-600 mb-3">Start by entering your product information. All fields are required:</p>
+                    <ul class="text-sm text-gray-600 space-y-1 mb-3">
+                        <li><strong>Product Name:</strong> Used in campaign names</li>
+                        <li><strong>Product ASIN:</strong> Amazon product identifier</li>
+                        <li><strong>Product SKUs:</strong> One SKU per line</li>
+                    </ul>
+                    <div class="bg-blue-50 p-3 rounded-lg text-sm">
+                        <p><strong>💡 V2.0 Tip:</strong> Enhanced form validation with real-time feedback!</p>
+                    </div>
+                `,
+                highlight: '.section-card:has(#productName)'
+            },
+            {
+                title: "Theme Selection",
+                content: `
+                    <h4 class="font-semibold text-gray-800 mb-2">Step 2: Choose Campaign Theme</h4>
+                    <p class="text-sm text-gray-600 mb-3">Select a theme that will be applied to all your campaigns:</p>
+                    <ul class="text-sm text-gray-600 space-y-1 mb-3">
+                        <li><strong>BKWS:</strong> Branded Keywords</li>
+                        <li><strong>Rank:</strong> Ranking Keywords</li>
+                        <li><strong>Scale:</strong> Scaling Campaigns</li>
+                        <li><strong>Custom:</strong> Create your own theme</li>
+                    </ul>
+                    <div class="bg-green-50 p-3 rounded-lg text-sm">
+                        <p><strong>💡 V2.0 Tip:</strong> You can override themes for individual campaigns later!</p>
+                    </div>
+                `,
+                highlight: '.section-card:has(#campaignTheme)'
+            },
+            {
+                title: "Campaign Nomenclature",
+                content: `
+                    <h4 class="font-semibold text-gray-800 mb-2">Step 3: Campaign Naming System</h4>
+                    <p class="text-sm text-gray-600 mb-3">Customize how your campaign names are structured:</p>
+                    <ul class="text-sm text-gray-600 space-y-1 mb-3">
+                        <li><strong>Naming Pattern:</strong> Use placeholders to create consistent names</li>
+                        <li><strong>Available Placeholders:</strong> {PRODUCT}, {THEME}, {CAMPAIGN}, {ASIN}, {PLACEMENTS}</li>
+                        <li><strong>Example:</strong> "Wireless Earbuds - Rank - SP-EX - B08XYZ123 - TOS"</li>
+                    </ul>
+                    <div class="bg-orange-50 p-3 rounded-lg text-sm">
+                        <p><strong>✨ V2.0 Feature:</strong> Enhanced nomenclature with better spacing and organization!</p>
+                    </div>
+                `,
+                highlight: '.section-card:has(#nomenclaturePattern)'
+            },
+            {
+                title: "Live Preview System",
+                content: `
+                    <h4 class="font-semibold text-gray-800 mb-2">Step 4: Smart Live Preview</h4>
+                    <p class="text-sm text-gray-600 mb-3">See how your campaign names will look in real-time:</p>
+                    <ul class="text-sm text-gray-600 space-y-1 mb-3">
+                        <li><strong>Real-time Updates:</strong> Preview changes as you type</li>
+                        <li><strong>Context-Aware:</strong> Shows current active campaign</li>
+                        <li><strong>Professional Display:</strong> Monospace font for clarity</li>
+                        <li><strong>Instant Feedback:</strong> See results before generating</li>
+                    </ul>
+                    <div class="bg-purple-50 p-3 rounded-lg text-sm">
+                        <p><strong>🔥 V2.0 Feature:</strong> Large, easy-to-read preview with enhanced design!</p>
+                    </div>
+                `,
+                highlight: '.live-preview-card'
+            },
+            {
+                title: "Campaign Selection",
+                content: `
+                    <h4 class="font-semibold text-gray-800 mb-2">Step 5: Select Campaign Types</h4>
+                    <p class="text-sm text-gray-600 mb-3">Choose the campaign types that fit your PPC strategy:</p>
+                    <div class="text-sm text-gray-600 mb-3">
+                        <p><strong>Manual Campaigns:</strong></p>
+                        <ul class="space-y-1 ml-3">
+                            <li>• SP-EX: Exact match (high precision)</li>
+                            <li>• SP-PH: Phrase match (medium precision)</li>
+                            <li>• SP-BR: Broad match (discovery)</li>
+                        </ul>
+                        <p class="mt-2"><strong>Auto Campaigns:</strong></p>
+                        <ul class="space-y-1 ml-3">
+                            <li>• AUTO-CA: Catch-all (all targeting types)</li>
+                            <li>• AUTO-CM: Close match only</li>
+                        </ul>
+                    </div>
+                    <div class="bg-purple-50 p-3 rounded-lg text-sm">
+                        <p><strong>🚀 V2.0 Feature:</strong> Enhanced card animations and visual feedback!</p>
+                    </div>
+                `,
+                highlight: '.section-card:has(.campaign-card)'
+            },
+            {
+                title: "Campaign Configuration",
+                content: `
+                    <h4 class="font-semibold text-gray-800 mb-2">Step 6: Configure Your Campaigns</h4>
+                    <p class="text-sm text-gray-600 mb-3">Set up each campaign with specific settings:</p>
+                    <ul class="text-sm text-gray-600 space-y-1 mb-3">
+                        <li><strong>Budget:</strong> Daily spend limit (default: $10)</li>
+                        <li><strong>Bid:</strong> Starting bid amount</li>
+                        <li><strong>Keywords:</strong> Target keywords (manual campaigns)</li>
+                        <li><strong>Placements:</strong> Top of Search, Product Pages</li>
+                    </ul>
+                    <div class="bg-orange-50 p-3 rounded-lg text-sm">
+                        <p><strong>✨ V2.0 Feature:</strong> Smart live preview shows current tab's campaign name!</p>
+                    </div>
+                `,
+                highlight: '#configurationSection'
+            },
+            {
+                title: "Search Term Isolation",
+                content: `
+                    <h4 class="font-semibold text-gray-800 mb-2">Step 7: Advanced Feature</h4>
+                    <p class="text-sm text-gray-600 mb-3">Prevent keyword overlap with intelligent isolation:</p>
+                    <ul class="text-sm text-gray-600 space-y-1 mb-3">
+                        <li><strong>Automatic Negatives:</strong> Adds exact keywords as negatives to other campaigns</li>
+                        <li><strong>Prevents Overlap:</strong> Stops internal competition</li>
+                        <li><strong>Improves Performance:</strong> Better campaign control</li>
+                        <li><strong>Optional Feature:</strong> Enable only when needed</li>
+                    </ul>
+                    <div class="bg-yellow-50 p-3 rounded-lg text-sm">
+                        <p><strong>💡 Pro Tip:</strong> Enable isolation for better campaign performance control!</p>
+                    </div>
+                `,
+                highlight: '#isolationSection'
+            },
+            {
+                title: "Campaign Overview",
+                content: `
+                    <h4 class="font-semibold text-gray-800 mb-2">Step 8: Monitor Your Progress</h4>
+                    <p class="text-sm text-gray-600 mb-3">Track your campaign building progress with real-time analytics:</p>
+                    <ul class="text-sm text-gray-600 space-y-1 mb-3">
+                        <li><strong>Live Statistics:</strong> Total campaigns, keywords, targets</li>
+                        <li><strong>Budget Tracking:</strong> Combined daily spend across all campaigns</li>
+                        <li><strong>Campaign Breakdown:</strong> Manual vs Auto campaign split</li>
+                        <li><strong>Progress Indicators:</strong> See completion status</li>
+                    </ul>
+                    <div class="bg-blue-50 p-3 rounded-lg text-sm">
+                        <p><strong>📊 V2.0 Feature:</strong> Beautiful overview dashboard with accurate statistics!</p>
+                    </div>
+                `,
+                highlight: '#campaignOverview'
+            },
+            {
+                title: "Generate & Download",
+                content: `
+                    <h4 class="font-semibold text-gray-800 mb-2">Step 9: Generate Your Campaigns</h4>
+                    <p class="text-sm text-gray-600 mb-3">Create your Excel file ready for Amazon Seller Central:</p>
+                    <ul class="text-sm text-gray-600 space-y-1 mb-3">
+                        <li><strong>Validation:</strong> Ensures all required fields are filled</li>
+                        <li><strong>Excel Format:</strong> Amazon Seller Central compatible</li>
+                        <li><strong>Professional Naming:</strong> Clean, consistent campaign names</li>
+                        <li><strong>Search Term Isolation:</strong> Optional advanced feature</li>
+                    </ul>
+                    <div class="bg-green-50 p-3 rounded-lg text-sm">
+                        <p><strong>🎉 Almost Done!</strong> One click to generate your professional campaigns!</p>
+                    </div>
+                `,
+                highlight: '#generateBtn'
+            },
+            {
+                title: "Upload to Amazon",
+                content: `
+                    <h4 class="font-semibold text-gray-800 mb-2">Step 10: Deploy Your Campaigns</h4>
+                    <p class="text-sm text-gray-600 mb-3">Seamlessly upload your campaigns to Amazon:</p>
+                    <ul class="text-sm text-gray-600 space-y-1 mb-3">
+                        <li><strong>Direct Link:</strong> One-click access to Amazon's bulk upload</li>
+                        <li><strong>Ready to Use:</strong> Pre-formatted Excel file</li>
+                        <li><strong>Professional Results:</strong> Optimized campaign structure</li>
+                        <li><strong>Time Saved:</strong> Hours of work completed in minutes</li>
+                    </ul>
+                    <div class="bg-green-50 p-3 rounded-lg text-sm">
+                        <p><strong>🎉 V2.0 Complete!</strong> You're ready to dominate Amazon PPC!</p>
+                    </div>
+                `,
+                highlight: '.bg-gradient-to-r.from-green-50.to-blue-50'
+            }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            updateUI();
+        });
+
+        function setupEventListeners() {
+            // Custom theme toggle
+            document.getElementById('enableCustomTheme').addEventListener('change', function() {
+                const customThemeInput = document.getElementById('customTheme');
+                const campaignThemeSelect = document.getElementById('campaignTheme');
+                
+                if (this.checked) {
+                    customThemeInput.disabled = false;
+                    campaignThemeSelect.disabled = true;
+                } else {
+                    customThemeInput.disabled = true;
+                    campaignThemeSelect.disabled = false;
+                }
+                updateLivePreview();
+            });
+
+            // Generate button
+            document.getElementById('generateBtn').addEventListener('click', generateCampaigns);
+
+            // Form validation and live preview updates
+            ['productName', 'productASIN', 'productSKUs'].forEach(id => {
+                document.getElementById(id).addEventListener('input', function() {
+                    validateForm();
+                    updateCampaignOverview();
+                    updateLivePreview();
+                });
+            });
+
+            // Theme change listeners
+            document.getElementById('campaignTheme').addEventListener('change', function() {
+                updateCampaignOverview();
+                updateLivePreview();
+            });
+            
+            document.getElementById('customTheme').addEventListener('input', function() {
+                updateCampaignOverview();
+                updateLivePreview();
+            });
+
+            // Nomenclature pattern change
+            document.getElementById('nomenclaturePattern').addEventListener('input', updateLivePreview);
+        }
+
+        function addCampaign(campaignType) {
+            const existingInstances = campaigns.filter(c => c.type === campaignType);
+            const nextVersion = existingInstances.length + 1;
+            
+            let campaignId;
+            if (nextVersion === 1) {
+                campaignId = campaignType;
+            } else {
+                campaignId = `${campaignType}-V${nextVersion}`;
+            }
+            
+            const campaign = {
+                id: campaignId,
+                type: campaignType,
+                version: nextVersion,
+                customName: ''
+            };
+            
+            campaigns.push(campaign);
+            campaignConfigs[campaignId] = getDefaultConfig(campaignType);
+            
+            updateUI();
+        }
+
+        function removeCampaign(campaignId) {
+            const index = campaigns.findIndex(c => c.id === campaignId);
+            if (index > -1) {
+                const campaign = campaigns[index];
+                campaigns.splice(index, 1);
+                delete campaignConfigs[campaignId];
+                
+                if (activeTab === campaignId) {
+                    activeTab = null;
+                }
+                
+                renumberCampaigns(campaign.type);
+                updateUI();
+            }
+        }
+
+        function renumberCampaigns(campaignType) {
+            const typeCampaigns = campaigns.filter(c => c.type === campaignType);
+            
+            typeCampaigns.forEach((campaign, index) => {
+                const newVersion = index + 1;
+                let newId;
+                
+                if (newVersion === 1) {
+                    newId = campaignType;
+                } else {
+                    newId = `${campaignType}-V${newVersion}`;
+                }
+                
+                if (campaign.id !== newId) {
+                    campaignConfigs[newId] = campaignConfigs[campaign.id];
+                    delete campaignConfigs[campaign.id];
+                    
+                    if (activeTab === campaign.id) {
+                        activeTab = newId;
+                    }
+                    
+                    campaign.id = newId;
+                }
+                campaign.version = newVersion;
+            });
+        }
+
+        function getDefaultConfig(campaignType) {
+            const isAuto = campaignType.startsWith('AUTO');
+            return {
+                budget: 10, // Fixed: Changed from 25 to 10
+                bid: 0.75,
+                keywords: isAuto ? [] : [], // Fixed: No default keywords
+                targetASINs: campaignType === 'SP-PAT' ? [] : undefined,
+                biddingStrategy: 'Dynamic bids - down only',
+                topOfSearch: 0,
+                productPages: 0,
+                restOfSearch: 0,
+                individualTheme: '',
+                customTheme: ''
+            };
+        }
+
+        function updateUI() {
+            updateCampaignCards();
+            updateSelectedCampaigns();
+            updateIsolationSection();
+            updateConfigurationTabs();
+            updateCampaignOverview();
+            updateLivePreview();
+            validateForm();
+        }
+
+        function updateCampaignCards() {
+            const campaignTypes = ['SP-EX', 'SP-PH', 'SP-BR', 'SP-BMM', 'SP-PAT', 'SKC-EX', 'AUTO-CA', 'AUTO-CM', 'AUTO-SB', 'AUTO-LM', 'AUTO-CP'];
+            
+            campaignTypes.forEach(type => {
+                const instancesContainer = document.getElementById(`instances-${type}`);
+                const countBadge = document.getElementById(`count-${type}`);
+                const typeCampaigns = campaigns.filter(c => c.type === type);
+                
+                if (typeCampaigns.length > 0) {
+                    countBadge.textContent = typeCampaigns.length;
+                    countBadge.classList.remove('hidden');
+                } else {
+                    countBadge.classList.add('hidden');
+                }
+                
+                if (typeCampaigns.length > 0) {
+                    instancesContainer.innerHTML = typeCampaigns.map(campaign => {
+                        const displayName = campaign.version === 1 ? campaign.type : `${campaign.type} V${campaign.version}`;
+                        return `
+                            <div class="campaign-instance-item">
+                                <span class="version-label">${displayName}</span>
+                                <button onclick="removeCampaign('${campaign.id}')" class="remove-btn">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    instancesContainer.innerHTML = '';
+                }
+            });
+        }
+
+        function updateSelectedCampaigns() {
+            const container = document.getElementById('selectedCampaigns');
+            const chipsContainer = document.getElementById('campaignChips');
+            
+            if (campaigns.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            container.classList.remove('hidden');
+            chipsContainer.innerHTML = campaigns.map(campaign => {
+                const displayName = campaign.version === 1 ? campaign.type : `${campaign.type} V${campaign.version}`;
+                return `<div class="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-4 py-2 rounded-full text-sm flex items-center shadow-md">
+                    ${displayName}
+                    <button onclick="removeCampaign('${campaign.id}')" class="ml-3 text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>`;
+            }).join('');
+        }
+
+        function updateIsolationSection() {
+            const section = document.getElementById('isolationSection');
+            const hasExactCampaigns = campaigns.some(campaign => 
+                campaign.type === 'SP-EX' || campaign.type === 'SKC-EX'
+            );
+            
+            if (hasExactCampaigns) {
+                section.classList.add('show');
+            } else {
+                section.classList.remove('show');
+            }
+        }
+
+        function updateConfigurationTabs() {
+            const configSection = document.getElementById('configurationSection');
+            const tabsNav = document.querySelector('#campaignTabs nav');
+            const tabContent = document.getElementById('tabContent');
+            
+            if (campaigns.length === 0) {
+                configSection.classList.add('hidden');
+                return;
+            }
+            
+            configSection.classList.remove('hidden');
+            
+            // Create tabs
+            tabsNav.innerHTML = campaigns.map(campaign => {
+                const displayName = campaign.version === 1 ? campaign.type : `${campaign.type} V${campaign.version}`;
+                return `<button class="tab-button py-3 px-6 border-b-2 font-medium text-sm transition-all duration-200 ${activeTab === campaign.id ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}" 
+                         onclick="switchTab('${campaign.id}')">${displayName}</button>`;
+            }).join('');
+            
+            // Set active tab if none selected
+            if (!activeTab && campaigns.length > 0) {
+                activeTab = campaigns[0].id;
+            }
+            
+            // Update tab content
+            if (activeTab && campaigns.find(c => c.id === activeTab)) {
+                const campaign = campaigns.find(c => c.id === activeTab);
+                tabContent.innerHTML = generateTabContent(campaign);
+                setupCampaignEventHandlers(campaign.id);
+                loadTabData(campaign.id);
+            }
+        }
+
+        function switchTab(campaignId) {
+            if (activeTab) {
+                saveCurrentTabData(activeTab);
+            }
+            
+            activeTab = campaignId;
+            updateConfigurationTabs();
+            updateLivePreview(); // Update live preview when switching tabs
+        }
+
+        // FIXED: Enhanced Campaign Overview Function
+        function updateCampaignOverview() {
+            const overviewSection = document.getElementById('campaignOverview');
+            const productName = document.getElementById('productName').value.trim();
+            const productASIN = document.getElementById('productASIN').value.trim();
+            const productSKUs = document.getElementById('productSKUs').value.trim();
+            
+            // Show/hide overview based on data availability
+            if (!productName && !productASIN && campaigns.length === 0) {
+                overviewSection.classList.add('hidden');
+                return;
+            }
+            
+            overviewSection.classList.remove('hidden');
+            
+            // Calculate statistics
+            const totalCampaigns = campaigns.length;
+            
+            // FIXED: Count only actual keywords (non-empty, user-entered)
+            let totalKeywords = 0;
+            let totalTargets = 0;
+            let totalBudget = 0;
+            
+            campaigns.forEach(campaign => {
+                const config = campaignConfigs[campaign.id];
+                if (config) {
+                    // Count only non-empty keywords
+                    if (config.keywords && Array.isArray(config.keywords)) {
+                        const actualKeywords = config.keywords.filter(keyword => 
+                            keyword && keyword.trim() !== '' && keyword.trim() !== '+'
+                        );
+                        totalKeywords += actualKeywords.length;
+                    }
+                    
+                    // Count target ASINs for SP-PAT campaigns
+                    if (campaign.type === 'SP-PAT' && config.targetASINs && Array.isArray(config.targetASINs)) {
+                        const actualTargets = config.targetASINs.filter(asin => 
+                            asin && asin.trim() !== ''
+                        );
+                        totalTargets += actualTargets.length;
+                    }
+                    
+                    // Sum up budgets
+                    totalBudget += config.budget || 0;
+                }
+            });
+            
+            // Update overview cards
+            document.getElementById('totalCampaigns').textContent = totalCampaigns;
+            document.getElementById('totalKeywords').textContent = totalKeywords;
+            document.getElementById('totalTargets').textContent = totalTargets;
+            document.getElementById('totalBudget').textContent = `$${totalBudget}`;
+            
+            // Update product information
+            const skuCount = productSKUs ? productSKUs.split('\n').filter(s => s.trim()).length : 0;
+            document.getElementById('overviewProductInfo').innerHTML = `
+                <div class="flex justify-between"><span>Product:</span><span>${productName || 'Not set'}</span></div>
+                <div class="flex justify-between"><span>ASIN:</span><span>${productASIN || 'Not set'}</span></div>
+                <div class="flex justify-between"><span>SKUs:</span><span>${skuCount} SKU${skuCount !== 1 ? 's' : ''}</span></div>
+            `;
+            
+            // Update campaign breakdown
+            const manualCount = campaigns.filter(c => !c.type.startsWith('AUTO')).length;
+            const autoCount = campaigns.filter(c => c.type.startsWith('AUTO')).length;
+            const avgBudget = totalCampaigns > 0 ? (totalBudget / totalCampaigns) : 0;
+            
+            document.getElementById('overviewCampaignInfo').innerHTML = `
+                <div class="flex justify-between"><span>Campaign Types:</span><span>${manualCount} Manual, ${autoCount} Auto</span></div>
+                <div class="flex justify-between"><span>Avg Budget/Campaign:</span><span>$${avgBudget.toFixed(2)}</span></div>
+            `;
+        }
+
+        // Enhanced V2.0 Live Preview Function
+        function updateLivePreview() {
+            const previewContent = document.getElementById('livePreviewContent');
+            const productName = document.getElementById('productName').value.trim();
+            const productASIN = document.getElementById('productASIN').value.trim();
+            
+            if (!productName && !productASIN && !activeTab) {
+                previewContent.innerHTML = 'Enter product details and configure a campaign to see preview';
+                previewContent.className = 'preview-campaign-name preview-empty-state';
+                return;
+            }
+            
+            if (!activeTab && campaigns.length === 0) {
+                previewContent.innerHTML = 'Select and configure a campaign to see preview';
+                previewContent.className = 'preview-campaign-name preview-empty-state';
+                return;
+            }
+            
+            // Show preview for the active campaign tab or first campaign
+            let targetCampaign = null;
+            if (activeTab && campaigns.find(c => c.id === activeTab)) {
+                targetCampaign = campaigns.find(c => c.id === activeTab);
+            } else if (campaigns.length > 0) {
+                targetCampaign = campaigns[0];
+            }
+            
+            if (targetCampaign) {
+                const pattern = document.getElementById('nomenclaturePattern').value;
+                const previewName = generatePreviewName(targetCampaign, pattern, productName, productASIN);
+                previewContent.textContent = previewName;
+                previewContent.className = 'preview-campaign-name';
+            } else {
+                previewContent.innerHTML = 'Configure campaign settings to see preview';
+                previewContent.className = 'preview-campaign-name preview-empty-state';
+            }
+        }
+
+        function saveCurrentTabData(campaignId) {
+            if (!campaignConfigs[campaignId]) return;
+            
+            const budgetField = document.querySelector(`[data-campaign="${campaignId}"][data-field="budget"]`);
+            const bidField = document.querySelector(`[data-campaign="${campaignId}"][data-field="bid"]`);
+            const keywordsField = document.querySelector(`[data-campaign="${campaignId}"][data-field="keywords"]`);
+            const targetASINsField = document.querySelector(`[data-campaign="${campaignId}"][data-field="targetASINs"]`);
+            const biddingStrategyField = document.querySelector(`[data-campaign="${campaignId}"][data-field="biddingStrategy"]`);
+            const individualThemeField = document.querySelector(`[data-campaign="${campaignId}"][data-field="individualTheme"]`);
+            const customThemeField = document.querySelector(`[data-campaign="${campaignId}"][data-field="customTheme"]`);
+            const topOfSearchField = document.querySelector(`[data-campaign="${campaignId}"][data-field="topOfSearch"]`);
+            const productPagesField = document.querySelector(`[data-campaign="${campaignId}"][data-field="productPages"]`);
+            const restOfSearchField = document.querySelector(`[data-campaign="${campaignId}"][data-field="restOfSearch"]`);
+            const customNameField = document.querySelector(`[data-campaign="${campaignId}"][data-field="customName"]`);
+            
+            if (budgetField) campaignConfigs[campaignId].budget = parseFloat(budgetField.value) || 10;
+            if (bidField) campaignConfigs[campaignId].bid = parseFloat(bidField.value) || 0.75;
+            if (keywordsField) {
+                // FIXED: Only save non-empty keywords
+                const keywords = keywordsField.value.split('\n')
+                    .map(k => k.trim())
+                    .filter(k => k !== '' && k !== '+');
+                campaignConfigs[campaignId].keywords = keywords;
+            }
+            if (targetASINsField) {
+                const targetASINs = targetASINsField.value.split('\n').map(a => a.trim()).filter(a => a);
+                campaignConfigs[campaignId].targetASINs = targetASINs;
+            }
+            if (biddingStrategyField) campaignConfigs[campaignId].biddingStrategy = biddingStrategyField.value;
+            if (individualThemeField) campaignConfigs[campaignId].individualTheme = individualThemeField.value;
+            if (customThemeField) campaignConfigs[campaignId].customTheme = customThemeField.value;
+            if (topOfSearchField) campaignConfigs[campaignId].topOfSearch = parseInt(topOfSearchField.value) || 0;
+            if (productPagesField) campaignConfigs[campaignId].productPages = parseInt(productPagesField.value) || 0;
+            if (restOfSearchField) campaignConfigs[campaignId].restOfSearch = parseInt(restOfSearchField.value) || 0;
+            if (customNameField) {
+                const campaign = campaigns.find(c => c.id === campaignId);
+                if (campaign) {
+                    campaign.customName = customNameField.value;
+                }
+            }
+            
+            updateLivePreview();
+            updateCampaignOverview(); // Update overview when data changes
+        }
+
+        function loadTabData(campaignId) {
+            const config = campaignConfigs[campaignId];
+            if (!config) return;
+            
+            setTimeout(() => {
+                const budgetField = document.querySelector(`[data-campaign="${campaignId}"][data-field="budget"]`);
+                const bidField = document.querySelector(`[data-campaign="${campaignId}"][data-field="bid"]`);
+                const keywordsField = document.querySelector(`[data-campaign="${campaignId}"][data-field="keywords"]`);
+                const targetASINsField = document.querySelector(`[data-campaign="${campaignId}"][data-field="targetASINs"]`);
+                const biddingStrategyField = document.querySelector(`[data-campaign="${campaignId}"][data-field="biddingStrategy"]`);
+                const individualThemeField = document.querySelector(`[data-campaign="${campaignId}"][data-field="individualTheme"]`);
+                const customThemeField = document.querySelector(`[data-campaign="${campaignId}"][data-field="customTheme"]`);
+                const topOfSearchField = document.querySelector(`[data-campaign="${campaignId}"][data-field="topOfSearch"]`);
+                const productPagesField = document.querySelector(`[data-campaign="${campaignId}"][data-field="productPages"]`);
+                const restOfSearchField = document.querySelector(`[data-campaign="${campaignId}"][data-field="restOfSearch"]`);
+                const customNameField = document.querySelector(`[data-campaign="${campaignId}"][data-field="customName"]`);
+                
+                if (budgetField) budgetField.value = config.budget;
+                if (bidField) bidField.value = config.bid;
+                if (keywordsField) keywordsField.value = config.keywords.join('\n');
+                if (targetASINsField) targetASINsField.value = (config.targetASINs || []).join('\n');
+                if (biddingStrategyField) biddingStrategyField.value = config.biddingStrategy;
+                if (individualThemeField) individualThemeField.value = config.individualTheme || '';
+                if (customThemeField) customThemeField.value = config.customTheme || '';
+                if (topOfSearchField) topOfSearchField.value = config.topOfSearch;
+                if (productPagesField) productPagesField.value = config.productPages;
+                if (restOfSearchField) restOfSearchField.value = config.restOfSearch;
+                if (customNameField) {
+                    const campaign = campaigns.find(c => c.id === campaignId);
+                    if (campaign) {
+                        customNameField.value = campaign.customName || '';
+                    }
+                }
+                
+                // Handle custom theme checkbox
+                const enableCustomThemeCheckbox = document.querySelector(`#enableCustomCampaignTheme-${campaignId}`);
+                const customThemeInput = document.querySelector(`#customCampaignTheme-${campaignId}`);
+                const individualThemeSelect = document.querySelector(`#individualTheme-${campaignId}`);
+                
+                if (enableCustomThemeCheckbox && customThemeInput && individualThemeSelect) {
+                    if (config.customTheme) {
+                        enableCustomThemeCheckbox.checked = true;
+                        customThemeInput.disabled = false;
+                        individualThemeSelect.disabled = true;
+                    } else {
+                        enableCustomThemeCheckbox.checked = false;
+                        customThemeInput.disabled = true;
+                        individualThemeSelect.disabled = false;
+                    }
+                }
+                
+                updateCampaignOverview();
+                updateLivePreview();
+            }, 50);
+        }
+
+        function generateTabContent(campaign) {
+            const config = campaignConfigs[campaign.id];
+            const isAuto = campaign.type.startsWith('AUTO');
+            const isProductTargeting = campaign.type === 'SP-PAT';
+            
+            return `
+                <div class="space-y-8">
+                    <!-- Campaign Name Customization -->
+                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-2xl border border-blue-200">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                            <i class="fas fa-edit mr-2 text-blue-600"></i>
+                            Custom Campaign Name (Optional)
+                        </label>
+                        <input type="text" data-campaign="${campaign.id}" data-field="customName"
+                               placeholder="Leave empty to use automatic naming pattern"
+                               class="form-input w-full focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-2">Override the automatic naming for this specific campaign</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Daily Budget ($)</label>
+                            <input type="number" value="${config.budget}" step="0.01" min="1"
+                                   data-campaign="${campaign.id}" data-field="budget"
+                                   class="form-input w-full focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Starting Bid ($)</label>
+                            <input type="number" value="${config.bid}" step="0.01" min="0.02"
+                                   data-campaign="${campaign.id}" data-field="bid"
+                                   class="form-input w-full focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Bidding Strategy</label>
+                            <select data-campaign="${campaign.id}" data-field="biddingStrategy"
+                                    class="form-input w-full focus:ring-2 focus:ring-blue-500">
+                                <option value="Dynamic bids - down only" ${config.biddingStrategy === 'Dynamic bids - down only' ? 'selected' : ''}>Dynamic bids - down only</option>
+                                <option value="Dynamic bids - up and down" ${config.biddingStrategy === 'Dynamic bids - up and down' ? 'selected' : ''}>Dynamic bids - up and down</option>
+                                <option value="Fixed bids" ${config.biddingStrategy === 'Fixed bids' ? 'selected' : ''}>Fixed bids</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Campaign Theme (overrides global theme)</label>
+                            <select id="individualTheme-${campaign.id}" data-campaign="${campaign.id}" data-field="individualTheme"
+                                    class="form-input w-full focus:ring-2 focus:ring-blue-500">
+                                <option value="">Use Global Theme</option>
+                                <option value="BKWS" ${config.individualTheme === 'BKWS' ? 'selected' : ''}>BKWS - Branded Keywords</option>
+                                <option value="Def PDP" ${config.individualTheme === 'Def PDP' ? 'selected' : ''}>Def PDP - Defensive Product Detail Page</option>
+                                <option value="Rank" ${config.individualTheme === 'Rank' ? 'selected' : ''}>Rank - Ranking Keywords</option>
+                                <option value="Scale" ${config.individualTheme === 'Scale' ? 'selected' : ''}>Scale - Scaling Campaigns</option>
+                                <option value="Research" ${config.individualTheme === 'Research' ? 'selected' : ''}>Research - Keyword Research</option>
+                                <option value="Offense" ${config.individualTheme === 'Offense' ? 'selected' : ''}>Offense - Product Targeting</option>
+                                <option value="Mixed" ${config.individualTheme === 'Mixed' ? 'selected' : ''}>Mixed - Multiple Campaign Types</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">
+                                <input type="checkbox" id="enableCustomCampaignTheme-${campaign.id}" class="mr-2">
+                                Enable Custom Theme for this Campaign
+                            </label>
+                            <input type="text" id="customCampaignTheme-${campaign.id}" 
+                                   placeholder="Enter custom theme name" disabled
+                                   data-campaign="${campaign.id}" data-field="customTheme"
+                                   class="form-input w-full focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100">
+                            <p class="text-xs text-gray-500 mt-2">Override with your own theme name for this campaign</p>
+                        </div>
+                    </div>
+                    
+                    ${!isAuto && !isProductTargeting ? `
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Keywords (one per line)</label>
+                        <textarea rows="6" placeholder="Enter keywords, one per line&#10;wireless earbuds&#10;bluetooth headphones&#10;${campaign.type === 'SP-BMM' ? '+noise +cancelling (for BMM)' : 'noise cancelling headphones'}"
+                                  data-campaign="${campaign.id}" data-field="keywords"
+                                  class="form-input w-full focus:ring-2 focus:ring-blue-500">${config.keywords.join('\\n')}</textarea>
+                        ${campaign.type === 'SP-BMM' ? '<p class="text-xs text-gray-500 mt-2">Use + symbol before required terms (e.g., +wireless +earbuds)</p>' : ''}
+                    </div>
+                    ` : ''}
+                    
+                    ${isProductTargeting ? `
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Target ASINs (one per line)</label>
+                        <textarea rows="4" placeholder="B08XYZ123ABC&#10;B07ABC456DEF"
+                                  data-campaign="${campaign.id}" data-field="targetASINs"
+                                  class="form-input w-full focus:ring-2 focus:ring-blue-500">${(config.targetASINs || []).join('\\n')}</textarea>
+                    </div>
+                    ` : ''}
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-4">Placement Modifiers (%)</label>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-2">Top of Search</label>
+                                <input type="number" value="${config.topOfSearch}" min="0" max="900"
+                                       data-campaign="${campaign.id}" data-field="topOfSearch"
+                                       class="form-input w-full focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-2">Product Pages</label>
+                                <input type="number" value="${config.productPages}" min="0" max="900"
+                                       data-campaign="${campaign.id}" data-field="productPages"
+                                       class="form-input w-full focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-2">Rest of Search</label>
+                                <input type="number" value="${config.restOfSearch}" min="0" max="900"
+                                       data-campaign="${campaign.id}" data-field="restOfSearch"
+                                       class="form-input w-full focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function setupCampaignEventHandlers(campaignId) {
+            const fields = document.querySelectorAll(`[data-campaign="${campaignId}"]`);
+            
+            fields.forEach(field => {
+                const eventType = field.tagName === 'SELECT' ? 'change' : 
+                                field.tagName === 'TEXTAREA' ? 'blur' : 'input';
+                
+                field.addEventListener(eventType, function() {
+                    if (field.getAttribute('data-field') === 'keywords' && 
+                        campaigns.find(c => c.id === campaignId)?.type === 'SP-BMM') {
+                        formatBMMKeywords(field);
+                    }
+                    
+                    saveCurrentTabData(campaignId);
+                    updateCampaignOverview();
+                    updateLivePreview();
+                });
+            });
+
+            // Custom theme checkbox handler
+            const enableCustomCheckbox = document.querySelector(`#enableCustomCampaignTheme-${campaignId}`);
+            if (enableCustomCheckbox) {
+                enableCustomCheckbox.addEventListener('change', function() {
+                    const customThemeInput = document.querySelector(`#customCampaignTheme-${campaignId}`);
+                    const individualThemeSelect = document.querySelector(`#individualTheme-${campaignId}`);
+                    
+                    if (this.checked) {
+                        customThemeInput.disabled = false;
+                        individualThemeSelect.disabled = true;
+                    } else {
+                        customThemeInput.disabled = true;
+                        individualThemeSelect.disabled = false;
+                    }
+                    
+                    saveCurrentTabData(campaignId);
+                    updateLivePreview();
+                });
+            }
+        }
+
+        function formatBMMKeywords(textarea) {
+            const lines = textarea.value.split('\n');
+            const formattedLines = lines.map(line => {
+                if (line.trim()) {
+                    const words = line.trim().split(/\s+/);
+                    return words.map(word => {
+                        return word.startsWith('+') ? word : '+' + word;
+                    }).join(' ');
+                }
+                return line;
+            });
+            
+            textarea.value = formattedLines.join('\n');
+        }
+
+        function generatePreviewName(campaign, pattern, productName, productASIN) {
+            // If campaign has a custom name, use it
+            if (campaign.customName && campaign.customName.trim()) {
+                return campaign.customName.trim();
+            }
+            
+            // Get effective theme for this campaign
+            const config = campaignConfigs[campaign.id];
+            let theme = '';
+            
+            if (config && config.customTheme) {
+                theme = config.customTheme;
+            } else if (config && config.individualTheme) {
+                theme = config.individualTheme;
+            } else {
+                // Use global theme
+                const enableCustomTheme = document.getElementById('enableCustomTheme').checked;
+                if (enableCustomTheme) {
+                    theme = document.getElementById('customTheme').value.trim();
+                } else {
+                    theme = document.getElementById('campaignTheme').value;
+                }
+            }
+            
+            // Generate placement codes
+            const codes = [];
+            if (config) {
+                if (config.topOfSearch > 0) codes.push('TOS');
+                if (config.productPages > 0) codes.push('PP');
+                if (config.restOfSearch > 0) codes.push('ROS');
+            }
+            const placementCodes = codes.join('-');
+            
+            // Build name with only non-empty parts
+            const parts = [];
+            
+            if (productName) parts.push(productName);
+            if (theme) parts.push(theme);
+            parts.push(campaign.id);
+            if (productASIN) parts.push(productASIN);
+            if (placementCodes) parts.push(placementCodes);
+            
+            return parts.join(' - ');
+        }
+
+        function validateForm() {
+            const productName = document.getElementById('productName').value.trim();
+            const productASIN = document.getElementById('productASIN').value.trim();
+            const productSKUs = document.getElementById('productSKUs').value.trim();
+            const hasValidCampaigns = campaigns.length > 0;
+            
+            const isValid = productName && productASIN && productSKUs && hasValidCampaigns;
+            document.getElementById('generateBtn').disabled = !isValid;
+        }
+
+        function generateCampaigns() {
+            const productName = document.getElementById('productName').value.trim();
+            const productASIN = document.getElementById('productASIN').value.trim();
+            const productSKUs = document.getElementById('productSKUs').value.trim().split('\n').filter(sku => sku.trim());
+            
+            const isolationEnabled = document.getElementById('enableIsolation').checked;
+            
+            // Collect exact match keywords for isolation
+            let exactKeywords = [];
+            if (isolationEnabled) {
+                campaigns.forEach(campaign => {
+                    if ((campaign.type === 'SP-EX' || campaign.type === 'SKC-EX') && campaignConfigs[campaign.id]) {
+                        const config = campaignConfigs[campaign.id];
+                        if (config.keywords) {
+                            const actualKeywords = config.keywords.filter(k => k && k.trim() !== '' && k.trim() !== '+');
+                            exactKeywords = exactKeywords.concat(actualKeywords);
+                        }
+                    }
+                });
+            }
+            
+            // Generate Excel data
+            const worksheetData = [];
+            
+            // Add headers
+            worksheetData.push([
+                'Product', 'Entity', 'Operation', 'Campaign ID', 'Ad Group ID', 'Portfolio ID', 'Ad ID', 'Keyword ID',
+                'Product Targeting ID', 'Campaign Name', 'Ad Group Name', 'Start Date', 'End Date', 'Targeting Type',
+                'State', 'Daily Budget', 'SKU', 'ASIN', 'Ad Group Default Bid', 'Bid', 'Keyword Text', 'Match Type',
+                'Bidding Strategy', 'Placement', 'Percentage', 'Product Targeting Expression'
+            ]);
+            
+            campaigns.forEach((campaign, campaignIndex) => {
+                const config = campaignConfigs[campaign.id];
+                const placements = {
+                    topOfSearch: config.topOfSearch || 0,
+                    productPages: config.productPages || 0,
+                    restOfSearch: config.restOfSearch || 0
+                };
+                
+                const campaignName = generateCampaignName(campaign, placements);
+                const displayName = campaign.version === 1 ? campaign.type : `${campaign.type} V${campaign.version}`;
+                const adGroupName = `${displayName} - ${campaign.type.includes('AUTO') ? 'Auto' : 'Manual'}`;
+                const isAuto = campaign.type.startsWith('AUTO');
+                const targetingType = isAuto ? 'auto' : 'manual';
+                
+                // Campaign entity
+                worksheetData.push([
+                    'Sponsored Products', 'Campaign', 'Create', campaignName, '', '', '', '', '', campaignName, '',
+                    new Date().toISOString().slice(0, 10).replace(/-/g, ''), '', targetingType, 'enabled',
+                    config.budget, '', '', '', '', '', '', config.biddingStrategy, '', '', ''
+                ]);
+                
+                // Placement modifiers
+                if (placements.topOfSearch > 0) {
+                    worksheetData.push([
+                        'Sponsored Products', 'Bidding adjustment', 'Create', campaignName, '', '', '', '', '', '', '',
+                        '', '', '', '', '', '', '', '', '', '', '', '', 'placement top', placements.topOfSearch, ''
+                    ]);
+                }
+                if (placements.productPages > 0) {
+                    worksheetData.push([
+                        'Sponsored Products', 'Bidding adjustment', 'Create', campaignName, '', '', '', '', '', '', '',
+                        '', '', '', '', '', '', '', '', '', '', '', '', 'placement product page', placements.productPages, ''
+                    ]);
+                }
+                if (placements.restOfSearch > 0) {
+                    worksheetData.push([
+                        'Sponsored Products', 'Bidding adjustment', 'Create', campaignName, '', '', '', '', '', '', '',
+                        '', '', '', '', '', '', '', '', '', '', '', '', 'placement rest of search', placements.restOfSearch, ''
+                    ]);
+                }
+                
+                // Ad group entity
+                worksheetData.push([
+                    'Sponsored Products', 'Ad group', 'Create', campaignName, adGroupName, '', '', '', '', '', adGroupName,
+                    '', '', '', 'enabled', '', '', '', config.bid, '', '', '', '', '', '', ''
+                ]);
+                
+                // Product ads
+                productSKUs.forEach(sku => {
+                    worksheetData.push([
+                        'Sponsored Products', 'Product ad', 'Create', campaignName, adGroupName, '', '', '', '', '', '',
+                        '', '', '', 'enabled', '', sku.trim(), '', '', '', '', '', '', '', '', ''
+                    ]);
+                });
+                
+                // Keywords/Targeting
+                if (!isAuto && campaign.type !== 'SP-PAT') {
+                    // Keyword campaigns - only add actual keywords
+                    const actualKeywords = config.keywords.filter(k => k && k.trim() !== '' && k.trim() !== '+');
+                    actualKeywords.forEach(keyword => {
+                        let matchType = 'exact';
+                        if (campaign.type === 'SP-PH') matchType = 'phrase';
+                        else if (campaign.type === 'SP-BR' || campaign.type === 'SP-BMM') matchType = 'broad';
+                        
+                        worksheetData.push([
+                            'Sponsored Products', 'Keyword', 'Create', campaignName, adGroupName, '', '', '', '', '', '',
+                            '', '', '', 'enabled', '', '', '', '', config.bid, keyword.trim(), matchType, '', '', '', ''
+                        ]);
+                    });
+                    
+                    // Add negative exact keywords for isolation
+                    if (isolationEnabled && !['SP-EX', 'SKC-EX'].includes(campaign.type)) {
+                        exactKeywords.forEach(keyword => {
+                            if (keyword.trim()) {
+                                worksheetData.push([
+                                    'Sponsored Products', 'Negative keyword', 'Create', campaignName, adGroupName, '', '', '', '', '', '',
+                                    '', '', '', 'enabled', '', '', '', '', '', keyword.trim(), 'negativeExact', '', '', '', ''
+                                ]);
+                            }
+                        });
+                    }
+                } else if (campaign.type === 'SP-PAT') {
+                    // Product targeting
+                    const actualTargets = (config.targetASINs || []).filter(a => a && a.trim() !== '');
+                    actualTargets.forEach(asin => {
+                        worksheetData.push([
+                            'Sponsored Products', 'Product targeting', 'Create', campaignName, adGroupName, '', '', '', '', '', '',
+                            '', '', '', 'enabled', '', '', '', '', config.bid, '', '', '', '', '', `asin="${asin.trim()}"`
+                        ]);
+                    });
+                    
+                    // Add negative exact keywords for isolation
+                    if (isolationEnabled) {
+                        exactKeywords.forEach(keyword => {
+                            if (keyword.trim()) {
+                                worksheetData.push([
+                                    'Sponsored Products', 'Negative keyword', 'Create', campaignName, adGroupName, '', '', '', '', '', '',
+                                    '', '', '', 'enabled', '', '', '', '', '', keyword.trim(), 'negativeExact', '', '', '', ''
+                                ]);
+                            }
+                        });
+                    }
+                } else if (isAuto) {
+                    // Auto targeting
+                    if (campaign.type === 'AUTO-CA') {
+                        // AUTO-CA (Catch-All) should have ALL targeting types
+                        const allTargetingTypes = ['close-match', 'loose-match', 'substitutes', 'complements'];
+                        
+                        allTargetingTypes.forEach(targetingType => {
+                            worksheetData.push([
+                                'Sponsored Products', 'Product targeting', 'Create', campaignName, adGroupName, '', '', '', '', '', '',
+                                '', '', '', 'enabled', '', '', '', '', config.bid, '', '', '', '', '', targetingType
+                            ]);
+                        });
+                    } else {
+                        // Other AUTO campaigns get their specific targeting type
+                        let targetingExpression = '';
+                        switch (campaign.type) {
+                            case 'AUTO-CM': targetingExpression = 'close-match'; break;
+                            case 'AUTO-SB': targetingExpression = 'substitutes'; break;
+                            case 'AUTO-LM': targetingExpression = 'loose-match'; break;
+                            case 'AUTO-CP': targetingExpression = 'complements'; break;
+                        }
+                        
+                        worksheetData.push([
+                            'Sponsored Products', 'Product targeting', 'Create', campaignName, adGroupName, '', '', '', '', '', '',
+                            '', '', '', 'enabled', '', '', '', '', config.bid, '', '', '', '', '', targetingExpression
+                        ]);
+                    }
+                    
+                    // Add negative exact keywords for isolation
+                    if (isolationEnabled) {
+                        exactKeywords.forEach(keyword => {
+                            if (keyword.trim()) {
+                                worksheetData.push([
+                                    'Sponsored Products', 'Negative keyword', 'Create', campaignName, adGroupName, '', '', '', '', '', '',
+                                    '', '', '', 'enabled', '', '', '', '', '', keyword.trim(), 'negativeExact', '', '', '', ''
+                                ]);
+                            }
+                        });
+                    }
+                }
+                
+                // Add empty row after each campaign (except the last one)
+                if (campaignIndex < campaigns.length - 1) {
+                    worksheetData.push(['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+                }
+            });
+            
+            // Create and download Excel file
+            const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Amazon PPC Campaigns');
+            
+            const filename = `Amazon_PPC_Campaigns_${productName.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            XLSX.writeFile(wb, filename);
+        }
+
+        function generateCampaignName(campaign, placements) {
+            return generatePreviewName(campaign, document.getElementById('nomenclaturePattern').value, 
+                                     document.getElementById('productName').value.trim(), 
+                                     document.getElementById('productASIN').value.trim());
+        }
+
+        // Tutorial functions
+        function startTutorial() {
+            currentTutorialStep = 1;
+            document.getElementById('tutorialPanel').classList.add('active');
+            document.getElementById('tutorialOverlay').classList.add('active');
+            showTutorialStep(currentTutorialStep);
+        }
+
+        function closeTutorial() {
+            document.getElementById('tutorialPanel').classList.remove('active');
+            document.getElementById('tutorialOverlay').classList.remove('active');
+            clearTutorialHighlights();
+        }
+
+        function nextTutorialStep() {
+            if (currentTutorialStep < totalTutorialSteps) {
+                currentTutorialStep++;
+                showTutorialStep(currentTutorialStep);
+            } else {
+                closeTutorial();
+            }
+        }
+
+        function previousTutorialStep() {
+            if (currentTutorialStep > 1) {
+                currentTutorialStep--;
+                showTutorialStep(currentTutorialStep);
+            }
+        }
+
+        function showTutorialStep(step) {
+            const tutorialStep = tutorialSteps[step - 1];
+            document.getElementById('tutorialContent').innerHTML = tutorialStep.content;
+            document.getElementById('currentTutorialStep').textContent = step;
+            document.getElementById('totalTutorialSteps').textContent = totalTutorialSteps;
+            
+            // Update progress bar
+            const progressPercent = (step / totalTutorialSteps) * 100;
+            document.getElementById('tutorialProgressBar').style.width = `${progressPercent}%`;
+            
+            // Update navigation buttons
+            document.getElementById('prevTutorialBtn').disabled = step === 1;
+            document.getElementById('nextTutorialBtn').textContent = step === totalTutorialSteps ? 'Finish' : 'Next';
+            
+            // Highlight relevant section
+            clearTutorialHighlights();
+            if (tutorialStep.highlight) {
+                const element = document.querySelector(tutorialStep.highlight);
+                if (element) {
+                    element.classList.add('tutorial-highlight');
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        function clearTutorialHighlights() {
+            document.querySelectorAll('.tutorial-highlight').forEach(el => {
+                el.classList.remove('tutorial-highlight');
+            });
+        }
+    </script>
+</body>
+</html>
+    <script id="html_badge_script1">
+        window.__genspark_remove_badge_link = "https://www.genspark.ai/api/html_badge/" +
+            "remove_badge?token=To%2FBnjzloZ3UfQdcSaYfDkzk9CxjvafUw85nivem9d5FaJloI%2FxvnmDPsiIzjP%2BLQTPeVivhTus6K7ckFm%2B72CHKAaSJzFwXqaZWWyl4g1bWS2lwYT1fUUYK6uvBPkdE9eultjEtAJx8PZ0QWd0WZzuE%2FntmM7E5DwVOjavGtXZ%2BkJuwyE2GDBdb5GNTEPPWSKnAl2V%2FyDSyg22vB%2FNRWFyxCQzisimNCQImW8R0vGJ%2F4BlJSruHA0nTNpEXPEU%2BEkaosOJSjPluHCEs50xgYF5D5sFp1JQ3efs0imXmpXbOY7%2BW99n3LzE1B%2Fj5huv1VHVh%2BIo0Ar89LB60Brs3gAG0YlhDxDgTwKNEL%2Bge5VrEGRKk%2BsSWqA5J97bfhHTytSggINReQ5kaOFLeSffS33vraqqzqy9IZlG7s0UDGWX8%2F5KsjLHui5pKTxAXGnIeMCbYLyF381Bkr5jeXHKg8AkCNdY93HAYJfParQeudkTuHTAFfdEoJjEXebxEgbzUXC3ZLwWUx3gbXsUUTcE61BInZHpowEXYepZFqaMT77k%3D";
+        window.__genspark_locale = "en-US";
+        window.__genspark_token = "To/BnjzloZ3UfQdcSaYfDkzk9CxjvafUw85nivem9d5FaJloI/xvnmDPsiIzjP+LQTPeVivhTus6K7ckFm+72CHKAaSJzFwXqaZWWyl4g1bWS2lwYT1fUUYK6uvBPkdE9eultjEtAJx8PZ0QWd0WZzuE/ntmM7E5DwVOjavGtXZ+kJuwyE2GDBdb5GNTEPPWSKnAl2V/yDSyg22vB/NRWFyxCQzisimNCQImW8R0vGJ/4BlJSruHA0nTNpEXPEU+EkaosOJSjPluHCEs50xgYF5D5sFp1JQ3efs0imXmpXbOY7+W99n3LzE1B/j5huv1VHVh+Io0Ar89LB60Brs3gAG0YlhDxDgTwKNEL+ge5VrEGRKk+sSWqA5J97bfhHTytSggINReQ5kaOFLeSffS33vraqqzqy9IZlG7s0UDGWX8/5KsjLHui5pKTxAXGnIeMCbYLyF381Bkr5jeXHKg8AkCNdY93HAYJfParQeudkTuHTAFfdEoJjEXebxEgbzUXC3ZLwWUx3gbXsUUTcE61BInZHpowEXYepZFqaMT77k=";
+    </script>
+    
+    <script id="html_notice_dialog_script" src="https://www.genspark.ai/notice_dialog.js"></script>
+    
