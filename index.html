@@ -7,6 +7,8 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="credentials.js"></script>
+    <script src="auth.js"></script>
     <style>
         /* V2.0 Enhanced Styles */
         .campaign-card {
@@ -491,9 +493,13 @@
                         <span class="text-purple-200">Generate Amazon-ready campaigns instantly</span>
                     </div>
                 </div>
-                <button onclick="startTutorial()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-6 py-3 rounded-xl transition-all duration-200 backdrop-filter backdrop-blur-sm">
-                    <i class="fas fa-graduation-cap mr-2"></i>Tutorial
-                </button>
+                <div class="flex items-center space-x-4">
+                    <button onclick="startTutorial()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-6 py-3 rounded-xl transition-all duration-200 backdrop-filter backdrop-blur-sm">
+                        <i class="fas fa-graduation-cap mr-2"></i>Tutorial
+                    </button>
+                    <!-- User Info Placeholder - Will be populated by auth.js -->
+                    <div id="userInfoContainer"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -2058,6 +2064,29 @@
                 el.classList.remove('tutorial-highlight');
             });
         }
+    </script>
+    
+    <!-- Authentication Initialization -->
+    <script>
+        // Initialize authentication when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the main application with authentication
+            if (window.authManager) {
+                const authSuccess = window.authManager.initMainApp();
+                
+                if (authSuccess) {
+                    // Add user info to header
+                    const userInfoContainer = document.getElementById('userInfoContainer');
+                    if (userInfoContainer && window.authManager.isAuthenticated()) {
+                        userInfoContainer.innerHTML = window.authManager.createUserInfoComponent();
+                        window.authManager.updateUI();
+                    }
+                    
+                    // Add welcome message
+                    console.log('Welcome back to V2.0, ' + window.authManager.getCurrentUser().name + '!');
+                }
+            }
+        });
     </script>
 </body>
 </html>
