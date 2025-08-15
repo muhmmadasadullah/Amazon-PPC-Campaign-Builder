@@ -158,7 +158,7 @@ class AuthManager {
 
         return `
             <div class="relative">
-                <div id="userInfo" class="flex items-center space-x-2 bg-white bg-opacity-15 rounded-full px-3 py-2 backdrop-blur-sm cursor-pointer hover:bg-opacity-20 transition-all duration-200" onclick="toggleUserDropdown()">
+                <div id="userInfo" class="flex items-center space-x-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-xl px-6 py-3 backdrop-filter backdrop-blur-sm cursor-pointer transition-all duration-200" onclick="toggleUserDropdown()">
                     <div class="w-7 h-7 bg-white bg-opacity-25 rounded-full flex items-center justify-center">
                         <i class="fas fa-user text-white text-xs"></i>
                     </div>
@@ -169,7 +169,7 @@ class AuthManager {
                 </div>
                 
                 <!-- Dropdown Menu -->
-                <div id="userDropdown" class="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50 opacity-0 invisible transform scale-95 transition-all duration-200">
+                <div id="userDropdown" class="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999] opacity-0 invisible transform scale-95 transition-all duration-200">
                     <div class="p-4 border-b border-gray-100">
                         <div class="flex items-center space-x-3">
                             <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
