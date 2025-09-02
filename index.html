@@ -7,8 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="credentials.js"></script>
-    <script src="auth.js"></script>
     <style>
         /* V2.0 Enhanced Styles */
         .campaign-card {
@@ -1121,6 +1119,10 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            // FIXED: Run bidding strategy canonicalizer self-tests
+            _testBiddingCanonicalizer();
+            _testExportBiddingStrategy();
+            
             setupEventListeners();
             updateUI();
         });
@@ -1249,6 +1251,14 @@
                 individualTheme: '',
                 customTheme: ''
             };
+        }
+
+        // FIXED: State migration for bidding strategy
+        function migrateBiddingStrategy(config) {
+            if (config && /fixed bids/i.test(config.biddingStrategy)) {
+                config.biddingStrategy = "Fixed bid";
+            }
+            return config;
         }
 
         function updateUI() {
@@ -1529,6 +1539,9 @@
             const config = campaignConfigs[campaignId];
             if (!config) return;
             
+            // FIXED: Migrate bidding strategy on load
+            migrateBiddingStrategy(config);
+            
             setTimeout(() => {
                 const budgetField = document.querySelector(`[data-campaign="${campaignId}"][data-field="budget"]`);
                 const bidField = document.querySelector(`[data-campaign="${campaignId}"][data-field="bid"]`);
@@ -1619,7 +1632,7 @@
                                     class="form-input w-full focus:ring-2 focus:ring-blue-500">
                                 <option value="Dynamic bids - down only" ${config.biddingStrategy === 'Dynamic bids - down only' ? 'selected' : ''}>Dynamic bids - down only</option>
                                 <option value="Dynamic bids - up and down" ${config.biddingStrategy === 'Dynamic bids - up and down' ? 'selected' : ''}>Dynamic bids - up and down</option>
-                                <option value="Fixed bids" ${config.biddingStrategy === 'Fixed bids' ? 'selected' : ''}>Fixed bids</option>
+                                <option value="Fixed bid" ${config.biddingStrategy === 'Fixed bid' ? 'selected' : ''}>Fixed bid</option>
                             </select>
                         </div>
                     </div>
@@ -1808,6 +1821,61 @@
             document.getElementById('generateBtn').disabled = !isValid;
         }
 
+        // FIXED: Bidding Strategy Canonicalization Function
+        function canonicalizeBiddingStrategy(input) {
+            if (!input) return "Dynamic bids - down only";
+            const k = String(input).trim().toLowerCase().replace(/\s+/g, " ");
+            if (k.includes("fixed")) return "Fixed bid";
+            if (k === "dynamic bids - up and down" || k === "dynamic bidding - up and down") return "Dynamic bids - up and down";
+            if (k === "dynamic bids - down only" || k === "dynamic bidding - down only") return "Dynamic bids - down only";
+            return "Fixed bid"; // safe default for any unknown "fixed" variant
+        }
+
+        // FIXED: Self-test function for bidding strategy canonicalizer
+        function _testBiddingCanonicalizer() {
+            const cases = [
+                ["Fixed bids", "Fixed bid"],
+                ["fixed Bids", "Fixed bid"],
+                ["Fixed bid", "Fixed bid"],
+                ["Dynamic bids - up and down", "Dynamic bids - up and down"],
+                ["Dynamic bids - down only", "Dynamic bids - down only"],
+                ["dynamic bidding - up and down", "Dynamic bids - up and down"],
+                ["dynamic bidding - down only", "Dynamic bids - down only"],
+                ["", "Dynamic bids - down only"],
+                [null, "Dynamic bids - down only"],
+                ["unknown", "Fixed bid"]
+            ];
+            const failures = cases.filter(([inp, exp]) => canonicalizeBiddingStrategy(inp) !== exp);
+            if (failures.length) {
+                console.error("Bidding canonicalizer FAIL", failures);
+                return false;
+            } else {
+                console.log("Bidding canonicalizer PASS - All tests successful");
+                return true;
+            }
+        }
+
+        // FIXED: Export smoke test helper (dev-only)
+        function _testExportBiddingStrategy() {
+            // Test that export canonicalizes all bidding strategies correctly
+            const testStrategies = ["Fixed bids", "Dynamic bids - up and down", "Dynamic bids - down only"];
+            const expected = ["Fixed bid", "Dynamic bids - up and down", "Dynamic bids - down only"];
+            
+            let allPassed = true;
+            testStrategies.forEach((strategy, index) => {
+                const canonicalized = canonicalizeBiddingStrategy(strategy);
+                if (canonicalized !== expected[index]) {
+                    console.error(`Export canonicalization FAIL: "${strategy}" -> "${canonicalized}", expected "${expected[index]}"`);
+                    allPassed = false;
+                }
+            });
+            
+            if (allPassed) {
+                console.log("Export bidding strategy canonicalization PASS - All export strategies canonical");
+            }
+            return allPassed;
+        }
+
         function generateCampaigns() {
             const productName = document.getElementById('productName').value.trim();
             const productASIN = document.getElementById('productASIN').value.trim();
@@ -1858,7 +1926,7 @@
                 worksheetData.push([
                     'Sponsored Products', 'Campaign', 'Create', campaignName, '', '', '', '', '', campaignName, '',
                     new Date().toISOString().slice(0, 10).replace(/-/g, ''), '', targetingType, 'enabled',
-                    config.budget, '', '', '', '', '', '', config.biddingStrategy, '', '', ''
+                    config.budget, '', '', '', '', '', '', canonicalizeBiddingStrategy(config.biddingStrategy), '', '', ''
                 ]);
                 
                 // Placement modifiers
@@ -2066,25 +2134,19 @@
         }
     </script>
     
-    <!-- Authentication Initialization -->
+    <!-- No Authentication Required - Direct Access -->
     <script>
-        // Initialize authentication when DOM is loaded
+        // V2.0 now works without sign-in requirements
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize the main application with authentication
-            if (window.authManager) {
-                const authSuccess = window.authManager.initMainApp();
-                
-                if (authSuccess) {
-                    // Add user info to header
-                    const userInfoContainer = document.getElementById('userInfoContainer');
-                    if (userInfoContainer && window.authManager.isAuthenticated()) {
-                        userInfoContainer.innerHTML = window.authManager.createUserInfoComponent();
-                        window.authManager.updateUI();
-                    }
-                    
-                    // Add welcome message
-                    console.log('Welcome back to V2.0, ' + window.authManager.getCurrentUser().name + '!');
-                }
+            // Optional: Add user info placeholder for future enhancement
+            const userInfoContainer = document.getElementById('userInfoContainer');
+            if (userInfoContainer) {
+                userInfoContainer.innerHTML = `
+                    <div class="flex items-center space-x-2 text-white bg-white bg-opacity-20 px-4 py-2 rounded-xl">
+                        <i class="fas fa-user-circle text-lg"></i>
+                        <span class="text-sm">Guest User</span>
+                    </div>
+                `;
             }
         });
     </script>
